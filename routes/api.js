@@ -1,34 +1,34 @@
-'use strict';
+"use strict";
 
-const expect = require('chai').expect;
-const ConvertHandler = require('../controllers/convertHandler.js');
+const expect = require("chai").expect;
+const ConvertHandler = require("../controllers/convertHandler.js");
 
 module.exports = function (app) {
-  
   let convertHandler = new ConvertHandler();
-  
-app.route('/api/convert').get((req, res) => {
-  const input = req.query.input;
-  const initNum = convertHandler.getNum(input);
-  const initUnit = convertHandler.getUnit(input);
 
-  if (initNum === null && !initUnit) {
-    return res.send('invalid number and unit');
-  } else if (initNum === null) {
-    return res.send('invalid number');
-  } else if (!initUnit) {
-    return res.send('invalid unit');
-  }
+  app.route("/api/convert").get((req, res) => {
+    let input = req.query.input;
 
-  const returnNum = convertHandler.convert(initNum, initUnit);
-  if (returnNum === null) {
-    return res.send('invalid number');
-  }
+    let getNum = convertHandler.getNum(input);
+    let getUnit = convertHandler.getUnit(input);
 
-  const returnUnit = convertHandler.getReturnUnit(initUnit);
-  const string = convertHandler.getString(initNum, initUnit, returnNum, returnUnit);
+    if (!getNum && !getUnit) {
+      res.send("invalid number and unit");
+    } else if (!getNum) {
+      res.send("invalid number");
+    } else if (!getUnit) {
+      res.send("invalid unit");
+    } else {
+      let convert = convertHandler.convert(getNum, getUnit);
+      let rtnUnit = convertHandler.getReturnUnit(getUnit);
 
-  return res.json(string);
-});
-
+      res.status(200).json({
+        initNum: getNum,
+        initUnit: getUnit,
+        returnNum: convert,
+        returnUnit: rtnUnit,
+        string: convertHandler.getString(getNum, getUnit, convert, rtnUnit),
+      });
+    }
+  });
 };

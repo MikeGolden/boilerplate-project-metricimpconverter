@@ -52,7 +52,7 @@ app.listen(port, function () {
           console.log('Tests are not valid:');
           console.error(e);
       }
-    }, 5000);
+    }, 1500);
   }
 });
 
