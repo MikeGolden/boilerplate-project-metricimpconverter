@@ -1,34 +1,41 @@
 "use strict";
-
-const expect = require("chai").expect;
 const ConvertHandler = require("../controllers/convertHandler.js");
 
-module.exports = function (app) {
+module.exports = function(app) {
   let convertHandler = new ConvertHandler();
 
-  app.route("/api/convert").get((req, res) => {
-    let input = req.query.input;
+  app.get("/api/convert", function(req, res) {
+    let data = {};
+    if (req.query && req.query.input) {
+      let initNum = convertHandler.getNum(req.query.input);
+      let initUnit = convertHandler.getUnit(req.query.input);
+      let returnNum = convertHandler.convert(Number(initNum), initUnit);
+      let returnUnit = convertHandler.getReturnUnit(initUnit);
 
-    let getNum = convertHandler.getNum(input);
-    let getUnit = convertHandler.getUnit(input);
-
-    if (!getNum && !getUnit) {
-      res.send("invalid number and unit");
-    } else if (!getNum) {
-      res.send("invalid number");
-    } else if (!getUnit) {
-      res.send("invalid unit");
-    } else {
-      let convert = convertHandler.convert(getNum, getUnit);
-      let rtnUnit = convertHandler.getReturnUnit(getUnit);
-
-      res.status(200).json({
-        initNum: getNum,
-        initUnit: getUnit,
-        returnNum: convert,
-        returnUnit: rtnUnit,
-        string: convertHandler.getString(getNum, getUnit, convert, rtnUnit),
-      });
+      if (
+        initNum.toString().includes("Error:") &&
+        initUnit.includes("Error:")
+      ) {
+        res.type("txt").send("invalid number and unit");
+      } else if (initNum.toString().includes("Error:")) {
+        res.type("txt").send("invalid number");
+      } else if (initUnit.includes("Error:")) {
+        res.type("txt").send("invalid unit");
+      } else {
+        data = {
+          initNum: initNum,
+          initUnit: initUnit,
+          returnNum: returnNum,
+          returnUnit: returnUnit,
+          string: convertHandler.getString(
+            initNum,
+            initUnit,
+            returnNum,
+            returnUnit
+          ),
+        };
+        res.json(data);
+      }
     }
   });
 };
