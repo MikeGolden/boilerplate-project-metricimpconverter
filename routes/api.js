@@ -1,41 +1,43 @@
+/*
+ *
+ *
+ *       Complete the API routing below
+ *
+ *
+ */
+
 "use strict";
+
+const expect = require("chai").expect;
 const ConvertHandler = require("../controllers/convertHandler.js");
 
-module.exports = function(app) {
+module.exports = function (app) {
   let convertHandler = new ConvertHandler();
 
-  app.get("/api/convert", function(req, res) {
-    let data = {};
-    if (req.query && req.query.input) {
-      let initNum = convertHandler.getNum(req.query.input);
-      let initUnit = convertHandler.getUnit(req.query.input);
-      let returnNum = convertHandler.convert(Number(initNum), initUnit);
-      let returnUnit = convertHandler.getReturnUnit(initUnit);
-
-      if (
-        initNum.toString().includes("Error:") &&
-        initUnit.includes("Error:")
-      ) {
-        res.type("txt").send("invalid number and unit");
-      } else if (initNum.toString().includes("Error:")) {
-        res.type("txt").send("invalid number");
-      } else if (initUnit.includes("Error:")) {
-        res.type("txt").send("invalid unit");
-      } else {
-        data = {
-          initNum: initNum,
-          initUnit: initUnit,
-          returnNum: returnNum,
-          returnUnit: returnUnit,
-          string: convertHandler.getString(
-            initNum,
-            initUnit,
-            returnNum,
-            returnUnit
-          ),
-        };
-        res.json(data);
-      }
+  app.route("/api/convert").get(function (req, res) {
+    let input = req.query.input;
+    let initNum = convertHandler.getNum(input);
+    let initUnit = convertHandler.getUnit(input);
+    if (!initNum && !initUnit) {
+      res.send("invalid number and unit");
+      return;
+    } else if (!initNum) {
+      res.send("invalid number");
+      return;
+    } else if (!initUnit) {
+      res.send("invalid unit");
+      return;
     }
+    let returnNum = convertHandler.convert(initNum, initUnit);
+    let returnUnit = convertHandler.getReturnUnit(initUnit);
+    let toString = convertHandler.getString(
+      initNum,
+      initUnit,
+      returnNum,
+      returnUnit
+    );
+
+    //res.json
+    res.json({ initNum, initUnit, returnNum, returnUnit, string: toString });
   });
 };
